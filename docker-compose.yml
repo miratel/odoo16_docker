@@ -1,0 +1,66 @@
+version: '3.1'
+services:
+  web:
+    container_name: odoo
+    image: odoo:16.0
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+      - "8072:8072"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./files:/var/lib/odoo/filestore
+      - ./config:/etc/odoo
+      - ./addons:/mnt/extra-addons
+      - ./log:/var/log/odoo
+      - ./requirements.txt:/etc/odoo/requirements.txt
+      - ./tmp:/tmp
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - ./entrypoint.sh:/entrypoint.sh
+    environment:
+      - PASSWORD_FILE=/run/secrets/postgresql_password
+    secrets:
+      - postgresql_password
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgresql_password
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+    secrets:
+      - postgresql_password
+#  nginx:
+#        container_name: nginx
+#        image: nginx:latest
+#        restart: unless-stopped
+#        ports:
+#            - 88:80
+#            - 443:443
+#        volumes:
+#            - ./nginx/conf:/etc/nginx/conf.d
+#            - ./nginx/ssl:/etc/nginx/ssl
+#            - ./nginx/snippets:/etc/nginx/snippets
+#  agent:
+#    container_name: agent
+#    image: pbx_agent
+#    user: root
+#    restart: unless-stopped
+#    network_mode: host
+#    environment:
+#      - 172.24.89.204:5038
+#    volumes:
+#    - ./agent:/app
+#    command: python pbx_agent.py
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+secrets:
+  postgresql_password:
+    file: odoo_pg_pass

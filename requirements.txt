@@ -1,0 +1,8 @@
+lameenc
+py-asterisk
+phonenumbers
+loguru
+humanize
+SpeechRecognition
+python-socketio==5.13.0
+aiohttp
